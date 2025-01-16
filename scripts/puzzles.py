@@ -13,7 +13,7 @@ PUZZLE_CORRUPTION_MAX = 10
 
 PUZZLE_NOTE_CORRRECT = 'solved'
 
-def generatePuzzle(dimension, labels, exampleChooser):
+def generatePuzzle(dimension, x, y, labels, exampleChooser):
     """
     Generate a valid puzzle and return the visual (pixel) and label representation for it.
     """
@@ -22,11 +22,11 @@ def generatePuzzle(dimension, labels, exampleChooser):
     puzzleCellLabels = None
 
     while (puzzleImages is None):
-        puzzleImages, puzzleCellLabels = _generatePuzzle(dimension, labels, exampleChooser)
+        puzzleImages, puzzleCellLabels, corruptCellLabels = _generatePuzzle(dimension, x, y, labels, exampleChooser)
 
-    return puzzleImages, puzzleCellLabels
+    return puzzleImages, puzzleCellLabels, corruptCellLabels
 
-def _generatePuzzle(dimension, labels, exampleChooser):
+def _generatePuzzle(dimension, x, y, labels, exampleChooser):
     """
     Generate a puzzle, but return (None, None) on failure.
     Failure can be encountered because this does not backtrack.
@@ -35,47 +35,20 @@ def _generatePuzzle(dimension, labels, exampleChooser):
 
     puzzleImages = [[None] * dimension for i in range(dimension)]
     puzzleCellLabels = [[None] * dimension for i in range(dimension)]
+    corruptCellLabels = [[None] * dimension for i in range(dimension)]
 
-    # Keep track of the possible options for each location.
-    # [row][col][label].
-    # Remove options as we add to the puzzle.
-    options = [[list(labels) for j in range(dimension)] for i in range(dimension)]
-
-    blockSize = int(math.sqrt(dimension))
-
+    labels = ['mnist_0', 'mnist_1', 'mnist_2', 'mnist_3', 'mnist_4']
     for row in range(dimension):
         for col in range(dimension):
-            if (len(options[row][col]) == 0):
-                # Failed to create a puzzle, try again.
-                return None, None
-
-            label = random.choice(options[row][col])
-            options[row][col].clear()
-
-            puzzleCellLabels[row][col] = label
-
-            blockRow = row // blockSize
-            blockCol = col // blockSize
-
-            # Remove the chosen label from row/col/grid options.
-            for i in range(dimension):
-                if label in options[i][col]:
-                    options[i][col].remove(label)
-
-                if label in options[row][i]:
-                    options[row][i].remove(label)
-
-                for j in range(dimension):
-                    if (i // blockSize == blockRow and j // blockSize == blockCol):
-                        if label in options[i][j]:
-                            options[i][j].remove(label)
+            puzzleCellLabels[row][col] = labels[x[row * 4 + col]]
+            corruptCellLabels[row][col] = labels[y[row * 4 + col]]
 
     # Once we have a complete puzzle, choose the examples.
     for row in range(dimension):
         for col in range(dimension):
             puzzleImages[row][col] = exampleChooser.takeExample(puzzleCellLabels[row][col])
 
-    return puzzleImages, puzzleCellLabels
+    return puzzleImages, puzzleCellLabels, corruptCellLabels
 
 def checkPuzzle(puzzleCellLabels):
     """
@@ -143,7 +116,7 @@ def corruptPuzzle(dimension, labels, exampleChooser, originalImages, originalCel
 
         corruptImages, corruptCellLabels, corruptNote = removePuzzleByReplacement(dimension, labels, exampleChooser, corruptImages, corruptCellLabels, corruptionChance)
 
-    return corruptImages, originalCellLabels, corruptNote
+    return corruptImages, originalCellLabels, corruptNote, corruptCellLabels
 
 def corruptPuzzleBySwap(dimension, labels, exampleChooser, corruptImages, corruptCellLabels, corruptionChance):
     """

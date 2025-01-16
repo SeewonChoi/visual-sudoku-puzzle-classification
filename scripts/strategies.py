@@ -75,25 +75,33 @@ class BaseStrategy(abc.ABC):
             [valid, numValid, validExamples],
         ]
 
-        for (split, count, examples) in splits:
-            for i in range(count):
+        for i, (split, count, examples) in enumerate(splits):
+            pairs = []
+
+            with open(f'four_{i}.csv', mode='r') as file:
+                for line in file:
+                    if line.strip():  # Skip empty lines
+                        [x, y] = line[:33].split("\t")
+                        x_digits = [int(d) for d in x]
+                        y_digits = [int(d) for d in y]
+                        pairs.append((x_digits, y_digits))
+            random.shuffle(pairs)
+            for (x, y) in pairs:
+               
                 # Generate a correct puzzle.
-
-                puzzleImages, puzzleCellLabels = puzzles.generatePuzzle(dimension, labels, examples)
-
+                puzzleImages, puzzleCellLabels, corruptCellLabels = puzzles.generatePuzzle(dimension, x, y, labels, examples)
+                
                 # split['images'].append(puzzleImages)
                 # split['cellLabels'].append(puzzleCellLabels)
                 # split['labels'].append(puzzles.PUZZLE_LABEL_CORRECT)
                 # split['notes'].append([puzzles.PUZZLE_NOTE_CORRRECT])
 
                 # Corrupt a puzzle.
+                # corruptImages, originalCellLabels, corruptNote, corruptCellLabels = puzzles.corruptPuzzle(dimension, labels, examples, puzzleImages, puzzleCellLabels, corruptChance)
 
-                corruptImages, corruptCellLabels, corruptNote = puzzles.corruptPuzzle(dimension, labels, examples, puzzleImages, puzzleCellLabels, corruptChance)
-
-                split['images'].append(corruptImages)
+                split['images'].append(puzzleImages)
                 split['cellLabels'].append(corruptCellLabels)
-                split['labels'].append(puzzles.PUZZLE_LABEL_INCORRECT)
-                split['notes'].append([corruptNote])
+                split['labels'].append(puzzleCellLabels)
 
         return train, test, valid
 

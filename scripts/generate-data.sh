@@ -6,7 +6,7 @@
 readonly THIS_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 readonly SETUP_SCRIPT="${THIS_DIR}/generate-split.py"
 
-readonly NUM_SPLITS='11'
+readonly NUM_SPLITS='1'
 
 readonly DIMENSIONS='4'
 readonly NUM_TRAIN_PUZZLES='500'

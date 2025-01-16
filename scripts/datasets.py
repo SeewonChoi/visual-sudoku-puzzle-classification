@@ -166,7 +166,7 @@ def fetchData(dimension, datasetName, overlapPercent,
         numTrain, numTest, numValid):
     allExamples, allowedLabels = loadMNIST(datasetName)
 
-    requiredExamplesPerLabel = dimension * (numTrain + numTest + numValid)
+    requiredExamplesPerLabel = dimension * (numTrain + numTest + numValid) * 10
     for label in allExamples:
         if (len(allExamples[label]) < requiredExamplesPerLabel):
             raise RuntimeError("Label (%s) from %s does not have enough examples. Want %d, have %d." % (str(label), datasetName, requiredExamplesPerLabel, len(allExamples[label])))
@@ -177,7 +177,7 @@ def fetchData(dimension, datasetName, overlapPercent,
 
     usedExamples = 0
 
-    for (examples, puzzleCount) in [(trainExamples, numTrain), (testExamples, numTest), (validExamples, numValid)]:
+    for (examples, puzzleCount) in [(trainExamples, numTrain*10), (testExamples, numTest*10), (validExamples, numValid*10)]:
         exampleCount = puzzleCount * dimension
         for label in allExamples:
             examples[label] = allExamples[label][usedExamples:(usedExamples + exampleCount)]
@@ -204,6 +204,11 @@ def loadMNIST(name = DATASET_MNIST, shuffle = True):
     data = tfds.as_numpy(tfds.load(TF_DATASET_NAME[name], batch_size = -1, as_supervised = True))
     (trainImages, trainLabels) = data['train']
     (testImages, testLabels) = data['test']
+
+    trainImages = numpy.concatenate((trainImages, trainImages), 0)
+    trainLabels = numpy.concatenate((trainLabels, trainLabels), 0)
+    testImages = numpy.concatenate((testImages, testImages), 0)
+    testLabels = numpy.concatenate((testLabels, testLabels), 0)
 
     labels = []
     for label in sorted(set(trainLabels) | set(testLabels)):
