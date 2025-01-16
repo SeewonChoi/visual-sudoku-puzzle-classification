@@ -136,19 +136,14 @@ def corruptPuzzle(dimension, labels, exampleChooser, originalImages, originalCel
     Take in a valid puzzle and return a copy that is corrupted.
     """
 
-    corruptMethod = random.randrange(2)
-
     corruptCellLabels = None
     while (corruptCellLabels is None or checkPuzzle(corruptCellLabels)):
         corruptImages = copy.deepcopy(originalImages)
         corruptCellLabels = copy.deepcopy(originalCellLabels)
 
-        if (corruptMethod):
-            corruptImages, corruptCellLabels, corruptNote = corruptPuzzleByReplacement(dimension, labels, exampleChooser, corruptImages, corruptCellLabels, corruptionChance)
-        else:
-            corruptImages, corruptCellLabels, corruptNote = corruptPuzzleBySwap(dimension, labels, exampleChooser, corruptImages, corruptCellLabels, corruptionChance)
+        corruptImages, corruptCellLabels, corruptNote = removePuzzleByReplacement(dimension, labels, exampleChooser, corruptImages, corruptCellLabels, corruptionChance)
 
-    return corruptImages, corruptCellLabels, corruptNote
+    return corruptImages, originalCellLabels, corruptNote
 
 def corruptPuzzleBySwap(dimension, labels, exampleChooser, corruptImages, corruptCellLabels, corruptionChance):
     """
@@ -192,6 +187,30 @@ def corruptPuzzleByReplacement(dimension, labels, exampleChooser, corruptImages,
         newLabel = oldLabel
         while (oldLabel == newLabel):
             newLabel = random.choice(labels)
+
+        corruptImages[corruptRow][corruptCol] = exampleChooser.getExample(newLabel)
+        corruptCellLabels[corruptRow][corruptCol] = newLabel
+
+    return corruptImages, corruptCellLabels, "replace(%d)" % (count)
+
+def removePuzzleByReplacement(dimension, labels, exampleChooser, corruptImages, corruptCellLabels, corruptionChance):
+    """
+    Corrupt a puzzle by removing single cell at a time.
+    """
+
+    count = 0
+    seenLocations = set()
+    maxReplacements = min(PUZZLE_CORRUPTION_MAX, dimension ** 2)
+
+    while ((count < maxReplacements) and (count == 0 or random.random() < corruptionChance)):
+        count += 1
+
+        corruptRow, corruptCol = randCell(dimension, seenLocations)
+        seenLocations.add((corruptRow, corruptCol))
+
+        oldLabel = corruptCellLabels[corruptRow][corruptCol]
+        newLabel = 'mnist_4'
+        # while (oldLabel == newLabel): newLabel = random.choice(labels)
 
         corruptImages[corruptRow][corruptCol] = exampleChooser.getExample(newLabel)
         corruptCellLabels[corruptRow][corruptCol] = newLabel

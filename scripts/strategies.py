@@ -81,10 +81,10 @@ class BaseStrategy(abc.ABC):
 
                 puzzleImages, puzzleCellLabels = puzzles.generatePuzzle(dimension, labels, examples)
 
-                split['images'].append(puzzleImages)
-                split['cellLabels'].append(puzzleCellLabels)
-                split['labels'].append(puzzles.PUZZLE_LABEL_CORRECT)
-                split['notes'].append([puzzles.PUZZLE_NOTE_CORRRECT])
+                # split['images'].append(puzzleImages)
+                # split['cellLabels'].append(puzzleCellLabels)
+                # split['labels'].append(puzzles.PUZZLE_LABEL_CORRECT)
+                # split['notes'].append([puzzles.PUZZLE_NOTE_CORRRECT])
 
                 # Corrupt a puzzle.
 
